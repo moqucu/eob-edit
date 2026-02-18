@@ -52,7 +52,7 @@ public class ItemsGenerator {
             System.out.println(line);
         }
 
-        Files.write(new File(DEST).toPath(),itemsLines, StandardOpenOption.WRITE);
+        Files.write(new File(DEST).toPath(),itemsLines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
     }
 
     private static void createItems(List<String> itemsLines, List<String> itemLines) {
