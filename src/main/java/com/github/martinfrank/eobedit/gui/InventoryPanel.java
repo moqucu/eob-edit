@@ -51,7 +51,7 @@ public class InventoryPanel extends JPanel {
 
             gbc.gridx = 2;
             gbc.weightx = 1.0;
-            JComboBox<Item> combo = new JComboBox<>(Items.ITEMS);
+            JComboBox<Item> combo = new JComboBox<>(Items.getAllItems());
             combo.setRenderer(new ItemListRenderer());
             combo.setMaximumRowCount(15);
             slotCombos[i] = combo;
@@ -89,6 +89,20 @@ public class InventoryPanel extends JPanel {
 
     public void setPlayerData(PlayerData playerData) {
         this.playerData = playerData;
+        refreshFromModel();
+    }
+
+    public void reloadItems() {
+        updating = true;
+        try {
+            Item[] allItems = Items.getAllItems();
+            for (int i = 0; i < SLOT_COUNT; i++) {
+                DefaultComboBoxModel<Item> model = new DefaultComboBoxModel<>(allItems);
+                slotCombos[i].setModel(model);
+            }
+        } finally {
+            updating = false;
+        }
         refreshFromModel();
     }
 

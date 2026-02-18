@@ -1,10 +1,13 @@
 package com.github.martinfrank.eobedit.gui;
 
+import com.github.martinfrank.eobedit.data.Items;
 import com.github.martinfrank.eobedit.data.PlayerData;
 import com.github.martinfrank.eobedit.data.SavegameFile;
 import com.github.martinfrank.eobedit.event.ChangeEventType;
 import com.github.martinfrank.eobedit.event.PlayerDataChangeEventListener;
 import com.github.martinfrank.eobedit.image.ImageProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,16 +15,21 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.prefs.Preferences;
 
 public class EditorFrame extends JFrame implements PlayerDataChangeEventListener {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EditorFrame.class);
     private static final String APP_TITLE = "EoB Savegame Editor";
+    private static final String PREF_GAME_DATA_PATH = "gameDataPath";
 
     private final SavegameFile savegameFile = new SavegameFile();
     private final ImageProvider imageProvider = new ImageProvider();
     private final StatsPanel statsPanel = new StatsPanel();
     private final InventoryPanel inventoryPanel = new InventoryPanel(imageProvider);
     private final JComboBox<String> playerSelector = new JComboBox<>();
+    private final JLabel statusLabel = new JLabel();
+    private final Preferences prefs = Preferences.userNodeForPackage(EditorFrame.class);
 
     private File currentFile;
 
@@ -30,6 +38,8 @@ public class EditorFrame extends JFrame implements PlayerDataChangeEventListener
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         savegameFile.registerChangeListener(this);
         buildUI();
+        updateStatusLabel();
+        tryLoadStoredGameData();
         pack();
         setMinimumSize(new Dimension(700, 500));
         setLocationRelativeTo(null);
@@ -54,9 +64,14 @@ public class EditorFrame extends JFrame implements PlayerDataChangeEventListener
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, statsPanel, new JScrollPane(inventoryPanel));
         splitPane.setResizeWeight(0.3);
 
+        JPanel statusBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        statusBar.setBorder(BorderFactory.createEtchedBorder());
+        statusBar.add(statusLabel);
+
         getContentPane().setLayout(new BorderLayout());
         getContentPane().add(topPanel, BorderLayout.NORTH);
         getContentPane().add(splitPane, BorderLayout.CENTER);
+        getContentPane().add(statusBar, BorderLayout.SOUTH);
     }
 
     private JMenuBar createMenuBar() {
@@ -78,6 +93,13 @@ public class EditorFrame extends JFrame implements PlayerDataChangeEventListener
         fileMenu.add(quitItem);
 
         menuBar.add(fileMenu);
+
+        JMenu settingsMenu = new JMenu("Settings");
+        JMenuItem gameDataItem = new JMenuItem("Set Game Data Path...");
+        gameDataItem.addActionListener(e -> onSetGameDataPath());
+        settingsMenu.add(gameDataItem);
+        menuBar.add(settingsMenu);
+
         return menuBar;
     }
 
@@ -173,6 +195,53 @@ public class EditorFrame extends JFrame implements PlayerDataChangeEventListener
             title += " *";
         }
         setTitle(title);
+    }
+
+    private void onSetGameDataPath() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Select Game Data Directory");
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        String storedPath = prefs.get(PREF_GAME_DATA_PATH, null);
+        if (storedPath != null) {
+            chooser.setCurrentDirectory(new File(storedPath));
+        }
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File dir = chooser.getSelectedFile();
+            loadGameData(dir);
+            prefs.put(PREF_GAME_DATA_PATH, dir.getAbsolutePath());
+        }
+    }
+
+    public void loadGameData(File gameDir) {
+        try {
+            Items.loadFromGameData(gameDir);
+            inventoryPanel.reloadItems();
+            updateStatusLabel();
+            LOGGER.info("Loaded game data from {}", gameDir);
+        } catch (IOException ex) {
+            LOGGER.error("Failed to load game data", ex);
+            JOptionPane.showMessageDialog(this,
+                    "Failed to load game data: " + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void tryLoadStoredGameData() {
+        String storedPath = prefs.get(PREF_GAME_DATA_PATH, null);
+        if (storedPath != null) {
+            File dir = new File(storedPath);
+            if (dir.isDirectory()) {
+                loadGameData(dir);
+            }
+        }
+    }
+
+    private void updateStatusLabel() {
+        if (Items.isUsingGameData()) {
+            statusLabel.setText("Items: Game Data (" + Items.getItemCount() + " items)");
+        } else {
+            statusLabel.setText("Items: Built-in (" + Items.getItemCount() + " items)");
+        }
     }
 
     @Override

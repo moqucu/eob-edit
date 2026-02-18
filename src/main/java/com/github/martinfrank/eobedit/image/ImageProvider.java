@@ -1,6 +1,7 @@
 package com.github.martinfrank.eobedit.image;
 
 import com.github.martinfrank.eobedit.data.Item;
+import com.github.martinfrank.eobedit.data.Items;
 import com.github.martinfrank.eobedit.data.Portrait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,10 @@ public class ImageProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(ImageProvider.class);
 
     public BufferedImage getItem(Item item) {
+        if (Items.isUsingGameData() && item.iconIndex >= 0) {
+            BufferedImage icon = Items.getIcon(item.iconIndex);
+            if (icon != null) return icon;
+        }
         return loadImageOrNull(ITEM_DIR, item.getId() + PNG);
     }
 
