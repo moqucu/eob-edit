@@ -8,7 +8,9 @@ A Java savegame editor for **Eye of the Beholder** (DOS, 1991) by Westwood/TSR. 
 - **Inventory management** — View and swap items across 14 inventory slots with item images and searchable dropdowns
 - **6-character support** — Switch between all six party slots via a player selector
 - **Unsaved changes tracking** — Title bar indicator and confirmation dialogs prevent accidental data loss
-- **460+ item catalog** — Full item database with hex IDs cross-referenced against the [GameFAQs hex editing guide](src/main/resources/hex-editing-guide.txt)
+- **Game data loading** — Load items directly from the game's PAK files (ITEM.DAT, EOBPAL.COL, ITEMICN.CPS) for authoritative item names, types, and icons
+- **Built-in fallback** — 460+ hardcoded item catalog used when no game data is configured
+- **Persistent settings** — Game data path is remembered across sessions
 
 ## Prerequisites
 
@@ -37,6 +39,14 @@ Or open a savegame directly:
 java -jar target/eob-edit-0.1.0.jar /path/to/EOBDATA.SAV
 ```
 
+To also load item data from the original game files:
+
+```bash
+java -jar target/eob-edit-0.1.0.jar /path/to/EOBDATA.SAV --game-data /path/to/eob-game-directory
+```
+
+You can also set the game data path at runtime via **Settings > Set Game Data Path...**. The path is persisted automatically for future sessions.
+
 An example savegame is included at `src/main/resources/EOBDATA.SAV` for testing.
 
 ## Tests
@@ -54,6 +64,7 @@ src/main/java/com/github/martinfrank/eobedit/
   event/                — Observer pattern for change tracking
   gui/                  — EditorFrame, StatsPanel, InventoryPanel
   image/                — ImageProvider (item/portrait PNGs)
+  pak/                  — PakReader, CpsDecoder, EobItemLoader (game file parsing)
   generate/             — ItemsGenerator (regenerates Items.java from items.txt)
   tools/                — ScreenShotSnipper (extracts item images from screenshots)
 
