@@ -71,6 +71,12 @@ public class EditorFrame extends JFrame implements PlayerDataChangeEventListener
         saveItem.addActionListener(e -> onSave());
         fileMenu.add(saveItem);
 
+        fileMenu.addSeparator();
+
+        JMenuItem quitItem = new JMenuItem("Quit");
+        quitItem.addActionListener(e -> onClose());
+        fileMenu.add(quitItem);
+
         menuBar.add(fileMenu);
         return menuBar;
     }
