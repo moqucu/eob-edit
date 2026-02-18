@@ -1,13 +1,20 @@
 package com.github.martinfrank.eobedit.data;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.github.martinfrank.eobedit.pak.EobItemLoader;
 
 public class Items {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Items.class);
-    
+
+    private static Item[] dynamicItems = null;
+    private static BufferedImage[] dynamicIcons = null;
+
     public static class ItemType{
         
         public static final ItemType ITEM = new ItemType("IT", "Item", "any other item");
@@ -1052,6 +1059,14 @@ public class Items {
         return classes;
     }
     public static Item getItem(byte[] data) {
+        if (dynamicItems != null) {
+            int index = (data[0] & 0xFF) | ((data[1] & 0xFF) << 8);
+            if (index >= 0 && index < dynamicItems.length) {
+                return dynamicItems[index];
+            }
+            LOGGER.debug("no dynamic item found for index {}", index);
+            return null;
+        }
         for (Item item: ITEMS){
             if (Arrays.equals(data, item.id)){
                 return item;
@@ -1060,6 +1075,31 @@ public class Items {
         LOGGER.debug("no item found for id {}", Arrays.toString(data));
         return null;
     }
-    
+
+    public static Item[] getAllItems() {
+        return dynamicItems != null ? dynamicItems : ITEMS;
+    }
+
+    public static void loadFromGameData(File gameDir) throws IOException {
+        EobItemLoader.LoadResult result = EobItemLoader.loadItems(gameDir);
+        dynamicItems = result.items;
+        dynamicIcons = result.icons;
+        LOGGER.info("Loaded {} items from game data", dynamicItems.length);
+    }
+
+    public static BufferedImage getIcon(int iconIndex) {
+        if (dynamicIcons != null && iconIndex >= 0 && iconIndex < dynamicIcons.length) {
+            return dynamicIcons[iconIndex];
+        }
+        return null;
+    }
+
+    public static boolean isUsingGameData() {
+        return dynamicItems != null;
+    }
+
+    public static int getItemCount() {
+        return dynamicItems != null ? dynamicItems.length : ITEMS.length;
+    }
 
 }

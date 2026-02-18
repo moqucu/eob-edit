@@ -10,6 +10,7 @@ public class Item {
     public final Items.ItemClass[] classes;
     public final String description;
     public final String details;
+    public int iconIndex = -1;
 
     public Item(String firstHex, String secondHex, Items.ItemType type, Items.ItemClass[] classes, String description, String details) {
         id[0] = ByteArrayTool.asByte(firstHex);
@@ -29,11 +30,21 @@ public class Item {
         this.details = null;
     }
 
+    public Item(int index, String description, Items.ItemType type, int iconIndex) {
+        id[0] = (byte)(index & 0xFF);
+        id[1] = (byte)((index >> 8) & 0xFF);
+        this.type = type;
+        this.classes = Items.ItemClass.CLASSES;
+        this.description = description;
+        this.details = description;
+        this.iconIndex = iconIndex;
+    }
+
     @Override
     public String toString() {
         return "Item{" +
                 "id=" + Arrays.toString(id) +
-                ", type=" + type.typeDescription +
+                ", type=" + (type != null ? type.typeDescription : "null") +
                 ", classes=" + Arrays.toString(classes) +
                 ", description='" + description + '\'' +
                 '}';
