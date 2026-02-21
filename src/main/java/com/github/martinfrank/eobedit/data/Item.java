@@ -11,6 +11,9 @@ public class Item {
     public final String description;
     public final String details;
     public int iconIndex = -1;
+    public int nameId = -1;
+    public int nameUnid = -1;
+    public int rawType = -1;
 
     public Item(String firstHex, String secondHex, Items.ItemType type, Items.ItemClass[] classes, String description, String details) {
         id[0] = ByteArrayTool.asByte(firstHex);
