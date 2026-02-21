@@ -55,6 +55,12 @@ public class EobItemLoader {
         }
     }
 
+    private static class ItemTypeRecord {
+        int armorClass;
+        int dmgNumDiceS, dmgNumPipsS, dmgIncS;
+        int dmgNumDiceL, dmgNumPipsL, dmgIncL;
+    }
+
     public static LoadResult loadItems(File gameDir) throws IOException {
         byte[] itemDat = PakReader.findInDirectory(gameDir, "ITEM.DAT");
         if (itemDat == null) {
@@ -66,13 +72,15 @@ public class EobItemLoader {
 
         int[] nameUnid = new int[numItems];
         int[] nameId = new int[numItems];
+        int[] flags = new int[numItems];
         int[] icons = new int[numItems];
         int[] types = new int[numItems];
+        int[] values = new int[numItems];
 
         for (int i = 0; i < numItems; i++) {
             nameUnid[i] = bb.get() & 0xFF;
             nameId[i] = bb.get() & 0xFF;
-            bb.get(); // flags
+            flags[i] = bb.get() & 0xFF;
             icons[i] = bb.get() & 0xFF;
             types[i] = bb.get() & 0xFF;
             bb.get(); // pos
@@ -80,7 +88,7 @@ public class EobItemLoader {
             bb.getShort(); // next
             bb.getShort(); // prev
             bb.get(); // level
-            bb.get(); // value
+            values[i] = bb.get() & 0xFF;
         }
 
         int numNames = bb.getShort() & 0xFFFF;
@@ -90,6 +98,8 @@ public class EobItemLoader {
             bb.get(nameBytes);
             names[i] = new String(nameBytes, StandardCharsets.US_ASCII).trim();
         }
+
+        ItemTypeRecord[] typeTable = loadItemTypes(gameDir);
 
         Item[] items = new Item[numItems];
         for (int i = 0; i < numItems; i++) {
@@ -102,6 +112,19 @@ public class EobItemLoader {
             items[i].nameId = nameId[i];
             items[i].nameUnid = nameUnid[i];
             items[i].rawType = types[i];
+            items[i].flags = flags[i];
+            items[i].value = values[i];
+
+            if (typeTable != null && types[i] >= 0 && types[i] < typeTable.length) {
+                ItemTypeRecord tr = typeTable[types[i]];
+                items[i].armorClass = tr.armorClass;
+                items[i].dmgNumDiceS = tr.dmgNumDiceS;
+                items[i].dmgNumPipsS = tr.dmgNumPipsS;
+                items[i].dmgIncS = tr.dmgIncS;
+                items[i].dmgNumDiceL = tr.dmgNumDiceL;
+                items[i].dmgNumPipsL = tr.dmgNumPipsL;
+                items[i].dmgIncL = tr.dmgIncL;
+            }
         }
 
         LOGGER.info("Loaded {} items from ITEM.DAT", numItems);
@@ -109,6 +132,37 @@ public class EobItemLoader {
         BufferedImage[] iconImages = loadIcons(gameDir);
 
         return new LoadResult(items, iconImages, names);
+    }
+
+    private static ItemTypeRecord[] loadItemTypes(File gameDir) throws IOException {
+        byte[] typeDat = PakReader.findInDirectory(gameDir, "ITEMTYPE.DAT");
+        if (typeDat == null) {
+            LOGGER.warn("ITEMTYPE.DAT not found, detailed item properties will be missing");
+            return null;
+        }
+
+        ByteBuffer bb = ByteBuffer.wrap(typeDat).order(ByteOrder.LITTLE_ENDIAN);
+        int numTypes = bb.getShort() & 0xFFFF;
+        ItemTypeRecord[] records = new ItemTypeRecord[numTypes];
+
+        for (int i = 0; i < numTypes; i++) {
+            ItemTypeRecord r = new ItemTypeRecord();
+            bb.getShort(); // invFlags
+            bb.getShort(); // handFlags
+            r.armorClass = bb.get();
+            bb.get(); // allowedClasses
+            bb.get(); // requiredHands
+            r.dmgNumDiceS = bb.get();
+            r.dmgNumPipsS = bb.get();
+            r.dmgIncS = bb.get();
+            r.dmgNumDiceL = bb.get();
+            r.dmgNumPipsL = bb.get();
+            r.dmgIncL = bb.get();
+            bb.get(); // unk1
+            bb.getShort(); // extraProperties
+            records[i] = r;
+        }
+        return records;
     }
 
     private static BufferedImage[] loadIcons(File gameDir) throws IOException {
