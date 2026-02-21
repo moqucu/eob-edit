@@ -149,11 +149,28 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>fat</shadedClassifierName>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>com.github.martinfrank.eobedit.App</mainClass>
                                 </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>module-info.class</exclude>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
+                                        <exclude>META-INF/substrate/config/*.json</exclude>
+                                        <exclude>META-INF/substrate/config/resourcebundles</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>
@@ -162,6 +179,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.11.2</version>
+                <configuration>
+                    <doclint>none</doclint>
+                    <quiet>true</quiet>
+                </configuration>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -173,4 +194,50 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>bundle-macos</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <mkdir dir="${project.build.directory}/dist" />
+                                        <exec executable="jpackage">
+                                            <arg value="--input" />
+                                            <arg value="${project.build.directory}" />
+                                            <arg value="--dest" />
+                                            <arg value="${project.build.directory}/dist" />
+                                            <arg value="--name" />
+                                            <arg value="EOBEdit" />
+                                            <arg value="--main-jar" />
+                                            <arg value="${project.build.finalName}-fat.jar" />
+                                            <arg value="--main-class" />
+                                            <arg value="com.github.martinfrank.eobedit.App" />
+                                            <arg value="--type" />
+                                            <arg value="app-image" />
+                                            <arg value="--icon" />
+                                            <arg value="src/main/resources/authentic_beholder_icon.icns" />
+                                            <arg value="--mac-package-name" />
+                                            <arg value="EOBEdit" />
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
