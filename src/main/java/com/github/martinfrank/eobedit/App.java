@@ -19,17 +19,17 @@ public class App {
             }
         }
 
-        final File savegame = savegameFile;
-        final File gameData = gameDataDir;
+        final var finalSavegame = savegameFile;
+        final var finalGameData = gameDataDir;
 
         SwingUtilities.invokeLater(() -> {
-            EditorFrame frame = new EditorFrame();
+            var frame = new EditorFrame();
             frame.setVisible(true);
-            if (gameData != null) {
-                frame.loadGameData(gameData);
+            if (finalGameData != null) {
+                frame.loadGameData(finalGameData);
             }
-            if (savegame != null) {
-                frame.loadFile(savegame);
+            if (finalSavegame != null) {
+                frame.loadFile(finalSavegame);
             }
         });
     }

@@ -10,8 +10,6 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * A popup-like dialog that allows searching and selecting an item.
@@ -56,11 +54,11 @@ public class SearchableItemPopup extends JDialog {
     }
 
     private void buildUI() {
-        JPanel searchPanel = new JPanel(new BorderLayout());
+        var searchPanel = new JPanel(new BorderLayout());
         searchPanel.setBackground(UIManager.getColor("TextField.background"));
         searchPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
         
-        JLabel searchIcon = new JLabel("🔍 ");
+        var searchIcon = new JLabel("🔍 ");
         searchPanel.add(searchIcon, BorderLayout.WEST);
         searchPanel.add(searchField, BorderLayout.CENTER);
         
@@ -70,7 +68,7 @@ public class SearchableItemPopup extends JDialog {
         itemList.setCellRenderer(new ItemListRenderer());
         itemList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
-        JScrollPane scrollPane = new JScrollPane(itemList);
+        var scrollPane = new JScrollPane(itemList);
         scrollPane.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
         add(scrollPane, BorderLayout.CENTER);
 
@@ -126,28 +124,28 @@ public class SearchableItemPopup extends JDialog {
     }
 
     private void filter() {
-        String text = searchField.getText().toLowerCase();
-        Item[] allItems = Items.getAllItems();
-        List<Item> filtered = Arrays.stream(allItems)
+        var text = searchField.getText().toLowerCase();
+        var allItems = Items.getAllItems();
+        var filtered = Arrays.stream(allItems)
                 .filter(it -> {
-                    String searchBase = (it.description + " " + it.getId() + " " + getTechnicalStats(it)).toLowerCase();
+                    var searchBase = (it.description + " " + it.getId() + " " + getTechnicalStats(it)).toLowerCase();
                     return searchBase.contains(text);
                 })
-                .collect(Collectors.toList());
+                .toList();
         
-        DefaultListModel<Item> model = new DefaultListModel<>();
+        var model = new DefaultListModel<Item>();
         // Always allow clearing the slot
         if (text.isEmpty() || "(empty)".contains(text)) {
             model.addElement(EMPTY_ITEM);
         }
-        for (Item it : filtered) {
+        for (var it : filtered) {
             model.addElement(it);
         }
         itemList.setModel(model);
     }
 
     private String getTechnicalStats(Item item) {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
         if ((item.flags & 0x20) != 0) sb.append("cursed ");
         if ((item.flags & 0x40) == 0) sb.append("unidentified ");
         if (item.armorClass != 0) sb.append("ac").append(item.armorClass).append(" ");
@@ -162,7 +160,7 @@ public class SearchableItemPopup extends JDialog {
     }
 
     public Item showPopup(Component invoker) {
-        Point location = invoker.getLocationOnScreen();
+        var location = invoker.getLocationOnScreen();
         setBounds(location.x, location.y + invoker.getHeight(), invoker.getWidth(), 300);
         
         SwingUtilities.invokeLater(searchField::requestFocusInWindow);
@@ -176,12 +174,11 @@ public class SearchableItemPopup extends JDialog {
         public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                                                       boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            if (value instanceof Item) {
-                Item item = (Item) value;
+            if (value instanceof Item item) {
                 setText(item.getDetailString() + " #" + item.getId());
 
                 if (item.iconIndex >= 0) {
-                    Image img = imageProvider.getItem(item);
+                    var img = imageProvider.getItem(item);
                     if (img != null) {
                         setIcon(new ImageIcon(img.getScaledInstance(16, 16, Image.SCALE_SMOOTH)));
                     } else {
@@ -192,12 +189,6 @@ public class SearchableItemPopup extends JDialog {
                 }
             }
             return this;
-        }
-
-        private boolean isCombatItem(Item item) {
-            if (item.type == null) return false;
-            String abbr = item.type.typeAbbreviation;
-            return abbr.equals("PR") || abbr.equals("SE") || abbr.equals("TW") || abbr.equals("AR") || abbr.equals("SH") || abbr.equals("DA");
         }
     }
 }

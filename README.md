@@ -14,7 +14,7 @@ A Java savegame editor for **Eye of the Beholder** (DOS, 1991) by Westwood/TSR. 
 
 ## Prerequisites
 
-- Java 8 or later
+- Java 25 or later
 - Maven 3.x
 
 ## Build

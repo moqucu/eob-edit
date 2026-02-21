@@ -46,7 +46,7 @@ public class Item {
         id[0] = (byte)(index & 0xFF);
         id[1] = (byte)((index >> 8) & 0xFF);
         this.type = type;
-        this.classes = Items.ItemClass.CLASSES;
+        this.classes = Items.ItemClass.values();
         this.description = description;
         this.details = description;
         this.iconIndex = iconIndex;
@@ -56,21 +56,21 @@ public class Item {
     public String toString() {
         return "Item{" +
                 "id=" + Arrays.toString(id) +
-                ", type=" + (type != null ? type.typeDescription : "null") +
+                ", type=" + (type != null ? type.typeName : "null") +
                 ", classes=" + Arrays.toString(classes) +
                 ", description='" + description + '\'' +
                 '}';
     }
 
     public String getId() {
-        int prim = 0xFF & id[0];
-        int sec = 0xFF & id[1];
+        var prim = 0xFF & id[0];
+        var sec = 0xFF & id[1];
         return (prim < 0x10 ? "0" : "") + Integer.toHexString(prim).toUpperCase(Locale.ROOT) +
                 (sec < 0x10 ? "0" : "") + Integer.toHexString(sec).toUpperCase(Locale.ROOT);
     }
 
     public String getDetailString() {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
         sb.append(description != null ? description : "Item " + getId());
 
         if ((flags & 0x20) != 0) sb.append(" (Cursed)");
@@ -93,7 +93,7 @@ public class Item {
 
     private boolean isCombatItem() {
         if (type == null) return false;
-        String abbr = type.typeAbbreviation;
+        var abbr = type.typeAbbreviation;
         return abbr.equals("PR") || abbr.equals("SE") || abbr.equals("TW") || abbr.equals("AR") || abbr.equals("SH") || abbr.equals("DA");
     }
 }

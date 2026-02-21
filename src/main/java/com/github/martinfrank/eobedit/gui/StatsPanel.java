@@ -86,7 +86,7 @@ public class StatsPanel extends JPanel {
         updating = true;
         try {
             if (playerData == null || !playerData.hasPlayerData()) {
-                for (int i = 0; i < currentSpinners.length; i++) {
+                for (var i = 0; i < currentSpinners.length; i++) {
                     currentSpinners[i].setValue(0);
                     currentSpinners[i].setEnabled(false);
                     if (maxSpinners[i] != null) {
@@ -96,9 +96,9 @@ public class StatsPanel extends JPanel {
                 }
                 return;
             }
-            Stat.Stats[] stats = Stat.Stats.values();
-            for (int i = 0; i < stats.length; i++) {
-                Stat stat = playerData.getStat(stats[i]);
+            var stats = Stat.Stats.values();
+            for (var i = 0; i < stats.length; i++) {
+                var stat = playerData.getStat(stats[i]);
                 currentSpinners[i].setValue(stat.getCurrent());
                 currentSpinners[i].setEnabled(true);
                 if (maxSpinners[i] != null) {
