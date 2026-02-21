@@ -5,11 +5,10 @@ A Java savegame editor for **Eye of the Beholder** (DOS, 1991) by Westwood/TSR. 
 ## Features
 
 - **Stats editing** — Modify STR, INT, WIS, DEX, CON, CHA, HP (current/max), and AC for each character
-- **Inventory management** — View and swap items across 14 inventory slots with item images and searchable dropdowns
+- **Inventory management** — View and swap items across 27 inventory slots (including equipment and pack) with item images and searchable dropdowns
 - **6-character support** — Switch between all six party slots via a player selector
 - **Unsaved changes tracking** — Title bar indicator and confirmation dialogs prevent accidental data loss
 - **Game data loading** — Load items directly from the game's PAK files (ITEM.DAT, EOBPAL.COL, ITEMICN.CPS) for authoritative item names, types, and icons
-- **Built-in fallback** — 460+ hardcoded item catalog used when no game data is configured
 - **Persistent settings** — Game data path is remembered across sessions
 
 ## Prerequisites
@@ -39,7 +38,7 @@ Or open a savegame directly:
 java -jar target/eob-edit-0.1.0.jar /path/to/EOBDATA.SAV
 ```
 
-To also load item data from the original game files:
+To also load item data from the original game files (highly recommended for inventory editing):
 
 ```bash
 java -jar target/eob-edit-0.1.0.jar /path/to/EOBDATA.SAV --game-data /path/to/eob-game-directory
@@ -60,30 +59,18 @@ mvn test
 ```
 src/main/java/com/github/martinfrank/eobedit/
   App.java              — Entry point, launches Swing GUI
-  data/                 — SavegameFile, PlayerData, Items, Stat, enums
+  data/                 — SavegameFile, PlayerData, GlobalItem, Items, Stat, enums
   event/                — Observer pattern for change tracking
   gui/                  — EditorFrame, StatsPanel, InventoryPanel
   image/                — ImageProvider (item/portrait PNGs)
   pak/                  — PakReader, CpsDecoder, EobItemLoader (game file parsing)
-  generate/             — ItemsGenerator (regenerates Items.java from items.txt)
   tools/                — ScreenShotSnipper (extracts item images from screenshots)
 
 src/main/resources/
-  items.txt             — Item catalog (hex IDs, types, descriptions)
-  types.txt             — Item type definitions
-  classes.txt           — Character class definitions
-  item/                 — 469 item icon PNGs
-  portrait/             — 55 portrait PNGs
+  item/                 — Fallback item icon PNGs
+  portrait/             — Fallback portrait PNGs
   hex-editing-guide.txt — Reference: EoB1 hex codes (GameFAQs)
   EOBDATA.SAV           — Example savegame for testing
-```
-
-## Regenerating the Item Catalog
-
-`Items.java` is generated code. To update it after editing `items.txt` or `types.txt`:
-
-```bash
-mvn compile exec:java -Dexec.mainClass="com.github.martinfrank.eobedit.generate.ItemsGenerator"
 ```
 
 ## License
