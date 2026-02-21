@@ -9,6 +9,8 @@ import com.github.martinfrank.eobedit.image.ImageProvider;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
 public class InventoryPanel extends JPanel {
@@ -65,8 +67,34 @@ public class InventoryPanel extends JPanel {
             slotCombos[i] = combo;
             add(combo, gbc);
 
+            gbc.gridx = 3;
+            gbc.weightx = 0;
+            JButton searchButton = new JButton("...");
+            searchButton.setMargin(new Insets(0, 2, 0, 2));
+            searchButton.setToolTipText("Search item...");
+            add(searchButton, gbc);
+
             final int slot = i;
             combo.addActionListener(e -> onSlotChanged(slot));
+            searchButton.addActionListener(e -> openSearchDialog(slot));
+            iconLabels[i].setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            iconLabels[i].addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    openSearchDialog(slot);
+                }
+            });
+        }
+    }
+
+    private void openSearchDialog(int slot) {
+        Window ancestor = SwingUtilities.getWindowAncestor(this);
+        Frame owner = (ancestor instanceof Frame) ? (Frame) ancestor : null;
+        SearchableItemDialog dialog = new SearchableItemDialog(owner, imageProvider);
+        dialog.setVisible(true);
+        Item selected = dialog.getSelectedItem();
+        if (selected != null) {
+            slotCombos[slot].setSelectedItem(selected);
         }
     }
 
