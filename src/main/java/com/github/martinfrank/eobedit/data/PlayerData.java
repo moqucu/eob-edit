@@ -9,16 +9,11 @@ public class PlayerData {
     public static final int DATA_INDICATOR_LENGTH = 1;
 
     public static final int CHARACTER_NAME_OFFSET = 2;
-    public static final int CHARACTER_NAME_LENGTH = 10;
+    public static final int CHARACTER_NAME_LENGTH = 11;
 
     public static final int INVENTORY_LENGTH = 2;
-    public static final int INVENTORY_OFFSET = 123;
-    public static final int INVENTORY_SLOT_AMOUNT = 14;
-
-    public static final int PRIMARY_LENGTH = 2;
-    public static final int PRIMARY_OFFSET = 119;
-    public static final int SECONDARY_LENGTH = 2;
-    public static final int SECONDARY_OFFSET = 121;
+    public static final int INVENTORY_OFFSET = 119;
+    public static final int INVENTORY_SLOT_AMOUNT = 27;
 
     public static final int STATS_LENGTH = 2;
 
@@ -26,10 +21,10 @@ public class PlayerData {
     public static final int EXP_LVL2_OFFSET = 37;
     public static final int EXP_LVL3_OFFSET = 38;
     public static final int EXP_LVL_LENGTH = 1;
-    public static final int EXP_PTS1_OFFSET = 47;
-    public static final int EXP_PTS2_OFFSET = 47;
+    public static final int EXP_PTS1_OFFSET = 39;
+    public static final int EXP_PTS2_OFFSET = 43;
     public static final int EXP_PTS3_OFFSET = 47;
-    public static final int EXP_PTS_LENGTH = 3;
+    public static final int EXP_PTS_LENGTH = 4;
 
     public static final int PROFESSION_OFFSET = 32;
     public static final int PROFESSION_LENGTH = 1;
@@ -45,6 +40,15 @@ public class PlayerData {
 
     public static final int FOODLEVEL_OFFSET = 35;
     public static final int FOODLEVEL_LENGTH = 1;
+
+    private static final String[] SLOT_NAMES = {
+        "Right Hand", "Left Hand",
+        "Pack 1",  "Pack 2",  "Pack 3",  "Pack 4",  "Pack 5",  "Pack 6",
+        "Pack 7",  "Pack 8",  "Pack 9",  "Pack 10", "Pack 11", "Pack 12",
+        "Pack 13", "Pack 14",
+        "Quiver", "Body", "Bracers", "Head", "Neck",
+        "Boots", "Belt 1", "Belt 2", "Belt 3", "Ring 1", "Ring 2"
+    };
 
     private boolean hasUnsavedChanges = false;
     private PlayerDataChangeEventListener listener;
@@ -69,27 +73,33 @@ public class PlayerData {
         byte[] nameByte = name.getBytes();
         ByteArrayTool.set(content, nameByte, CHARACTER_NAME_OFFSET, CHARACTER_NAME_LENGTH);
         updateChanges(ChangeEventType.NAME);
-
     }
 
+    public static String getSlotName(int slot) {
+        if (slot >= 0 && slot < SLOT_NAMES.length) {
+            return SLOT_NAMES[slot];
+        }
+        return "Slot " + slot;
+    }
 
-
-    public Item getInventory(int index){
-        if (index < 0 || index > INVENTORY_SLOT_AMOUNT){
-            throw new IllegalArgumentException("invalid inventory index (allowed is 0...13)");
+    /** Returns the uint16 global item index stored in this inventory slot. */
+    public int getInventoryIndex(int index) {
+        if (index < 0 || index >= INVENTORY_SLOT_AMOUNT) {
+            throw new IllegalArgumentException("invalid inventory index (allowed is 0.." + (INVENTORY_SLOT_AMOUNT - 1) + ")");
         }
         int offset = INVENTORY_OFFSET + index * INVENTORY_LENGTH;
         byte[] data = ByteArrayTool.copy(content, offset, INVENTORY_LENGTH);
-        return Items.getItem(data);
+        return (data[0] & 0xFF) | ((data[1] & 0xFF) << 8);
     }
 
-    public void setInventory(int index, Item item){
-        if (index < 0 || index > INVENTORY_SLOT_AMOUNT){
-            throw new IllegalArgumentException("invalid inventory index (allowed is 0...13)");
+    /** Stores a uint16 global item index into this inventory slot. */
+    public void setInventoryIndex(int index, int globalIndex) {
+        if (index < 0 || index >= INVENTORY_SLOT_AMOUNT) {
+            throw new IllegalArgumentException("invalid inventory index (allowed is 0.." + (INVENTORY_SLOT_AMOUNT - 1) + ")");
         }
         int offset = INVENTORY_OFFSET + index * INVENTORY_LENGTH;
-        ByteArrayTool.set(content, item.id, offset, INVENTORY_LENGTH);
-        //FIXME index?
+        byte[] data = new byte[]{(byte)(globalIndex & 0xFF), (byte)((globalIndex >> 8) & 0xFF)};
+        ByteArrayTool.set(content, data, offset, INVENTORY_LENGTH);
         updateChanges(ChangeEventType.INVENTORY);
     }
 

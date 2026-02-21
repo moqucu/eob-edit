@@ -46,10 +46,12 @@ public class EobItemLoader {
     public static class LoadResult {
         public final Item[] items;
         public final BufferedImage[] icons;
+        public final String[] nameTable;
 
-        public LoadResult(Item[] items, BufferedImage[] icons) {
+        public LoadResult(Item[] items, BufferedImage[] icons, String[] nameTable) {
             this.items = items;
             this.icons = icons;
+            this.nameTable = nameTable;
         }
     }
 
@@ -91,16 +93,22 @@ public class EobItemLoader {
 
         Item[] items = new Item[numItems];
         for (int i = 0; i < numItems; i++) {
-            String description = (nameId[i] < numNames) ? names[nameId[i]] : "Unknown";
+            String nameIdentified = (nameId[i] > 0 && nameId[i] < numNames) ? names[nameId[i]] : null;
+            String nameGeneric = (nameUnid[i] < numNames) ? names[nameUnid[i]] : "Unknown";
+            String description = (nameIdentified != null && !nameIdentified.isEmpty()) ? nameIdentified : nameGeneric;
+            
             Items.ItemType type = (types[i] < TYPE_MAP.length) ? TYPE_MAP[types[i]] : Items.ItemType.ITEM;
             items[i] = new Item(i, description, type, icons[i]);
+            items[i].nameId = nameId[i];
+            items[i].nameUnid = nameUnid[i];
+            items[i].rawType = types[i];
         }
 
         LOGGER.info("Loaded {} items from ITEM.DAT", numItems);
 
         BufferedImage[] iconImages = loadIcons(gameDir);
 
-        return new LoadResult(items, iconImages);
+        return new LoadResult(items, iconImages, names);
     }
 
     private static BufferedImage[] loadIcons(File gameDir) throws IOException {

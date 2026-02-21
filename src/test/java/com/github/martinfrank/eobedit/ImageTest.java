@@ -14,7 +14,7 @@ public class ImageTest {
 
 @Ignore
 public void testItems() {
-        for (Item it : Items.ITEMS) {
+        for (Item it : Items.getAllItems()) {
             System.out.println("item " + it);
             Assert.assertNotNull(imageProvider.getItem(it));
         }

@@ -26,7 +26,7 @@ public class EditorFrame extends JFrame implements PlayerDataChangeEventListener
     private final SavegameFile savegameFile = new SavegameFile();
     private final ImageProvider imageProvider = new ImageProvider();
     private final StatsPanel statsPanel = new StatsPanel();
-    private final InventoryPanel inventoryPanel = new InventoryPanel(imageProvider);
+    private final InventoryPanel inventoryPanel = new InventoryPanel(imageProvider, savegameFile);
     private final JComboBox<String> playerSelector = new JComboBox<>();
     private final JLabel statusLabel = new JLabel();
     private final Preferences prefs = Preferences.userNodeForPackage(EditorFrame.class);
@@ -155,7 +155,7 @@ public class EditorFrame extends JFrame implements PlayerDataChangeEventListener
         }
         PlayerData pd = savegameFile.getPlayer(idx);
         statsPanel.setPlayerData(pd);
-        inventoryPanel.setPlayerData(pd);
+        inventoryPanel.setPlayerData(pd, idx);
     }
 
     private void onSave() {
@@ -215,6 +215,7 @@ public class EditorFrame extends JFrame implements PlayerDataChangeEventListener
     public void loadGameData(File gameDir) {
         try {
             Items.loadFromGameData(gameDir);
+            savegameFile.resolveGlobalItemNames();
             inventoryPanel.reloadItems();
             updateStatusLabel();
             LOGGER.info("Loaded game data from {}", gameDir);
