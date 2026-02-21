@@ -1,6 +1,6 @@
 # eob-edit
 
-A Java savegame editor for **Eye of the Beholder** (DOS, 1991) by Westwood/TSR. It reads and modifies the binary `EOBDATA.SAV` file at the byte level, letting you tweak character stats, inventory, and more through an interactive Swing GUI.
+A Java savegame editor for **Eye of the Beholder** (DOS, 1991) by Westwood/TSR. It reads and modifies the binary `EOBDATA.SAV` file at the byte level, letting you tweak character stats, inventory, and more through a modern JavaFX GUI.
 
 ## Features
 
@@ -27,22 +27,16 @@ This produces a runnable fat JAR at `target/eob-edit-0.1.0.jar`.
 
 ## Run
 
-Open the GUI with a file chooser:
+You can run the application using Maven:
+
+```bash
+mvn javafx:run
+```
+
+Or run the produced JAR:
 
 ```bash
 java -jar target/eob-edit-0.1.0.jar
-```
-
-Or open a savegame directly:
-
-```bash
-java -jar target/eob-edit-0.1.0.jar /path/to/EOBDATA.SAV
-```
-
-To also load item data from the original game files (highly recommended for inventory editing):
-
-```bash
-java -jar target/eob-edit-0.1.0.jar /path/to/EOBDATA.SAV --game-data /path/to/eob-game-directory
 ```
 
 You can also set the game data path at runtime via **Settings > Set Game Data Path...**. The path is persisted automatically for future sessions.
