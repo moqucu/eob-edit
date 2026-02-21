@@ -9,16 +9,18 @@ import com.github.martinfrank.eobedit.image.ImageProvider;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
 public class InventoryPanel extends JPanel {
 
     private static final int SLOT_COUNT = PlayerData.INVENTORY_SLOT_AMOUNT;
 
-    // Sentinel used for the "empty" combo entry at position 0
+    // Sentinel used for the "empty" item
     private static final Item EMPTY_ITEM = new Item(0, "(empty)", Items.ItemType.ITEM, -1);
 
-    private final JComboBox<Item>[] slotCombos;
+    private final JButton[] slotButtons;
     private final JLabel[] iconLabels;
     private final ImageProvider imageProvider;
     private final SavegameFile saveFile;
@@ -30,7 +32,7 @@ public class InventoryPanel extends JPanel {
     public InventoryPanel(ImageProvider imageProvider, SavegameFile saveFile) {
         this.imageProvider = imageProvider;
         this.saveFile = saveFile;
-        this.slotCombos = new JComboBox[SLOT_COUNT];
+        this.slotButtons = new JButton[SLOT_COUNT];
         this.iconLabels = new JLabel[SLOT_COUNT];
 
         setLayout(new GridBagLayout());
@@ -59,39 +61,55 @@ public class InventoryPanel extends JPanel {
 
             gbc.gridx = 2;
             gbc.weightx = 1.0;
-            JComboBox<Item> combo = new JComboBox<>(buildComboModel());
-            combo.setRenderer(new ItemListRenderer());
-            combo.setMaximumRowCount(15);
-            slotCombos[i] = combo;
-            add(combo, gbc);
+            JButton button = new JButton("(empty)");
+            button.setHorizontalAlignment(SwingConstants.LEFT);
+            button.setBackground(UIManager.getColor("TextField.background"));
+            button.setMargin(new Insets(2, 5, 2, 2));
+            slotButtons[i] = button;
+            add(button, gbc);
 
             final int slot = i;
-            combo.addActionListener(e -> onSlotChanged(slot));
+            button.addActionListener(e -> openSearchPopup(slot));
+            iconLabels[i].setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            iconLabels[i].addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    openSearchPopup(slot);
+                }
+            });
         }
     }
 
-    private DefaultComboBoxModel<Item> buildComboModel() {
-        Item[] allItems = Items.getAllItems();
-        DefaultComboBoxModel<Item> model = new DefaultComboBoxModel<>();
-        model.addElement(EMPTY_ITEM);
-        for (Item item : allItems) {
-            model.addElement(item);
+    private void openSearchPopup(int slot) {
+        if (playerData == null) return;
+        
+        Window ancestor = SwingUtilities.getWindowAncestor(this);
+        SearchableItemPopup popup = new SearchableItemPopup(ancestor, imageProvider);
+        Item selected = popup.showPopup(slotButtons[slot]);
+        
+        if (selected != null) {
+            onItemChosen(slot, selected);
         }
-        return model;
     }
 
-    private void onSlotChanged(int slot) {
+    private void onItemChosen(int slot, Item item) {
         if (updating || playerData == null) {
             return;
         }
-        Item selected = (Item) slotCombos[slot].getSelectedItem();
-        if (selected == null || selected == EMPTY_ITEM) {
+        if (item == null || item == EMPTY_ITEM) {
             playerData.setInventoryIndex(slot, 0);
+            slotButtons[slot].setText("(empty)");
+            slotButtons[slot].setToolTipText(null);
+            iconLabels[slot].setToolTipText(null);
             iconLabels[slot].setIcon(null);
         } else {
-            int protoIdx = (selected.id[0] & 0xFF) | ((selected.id[1] & 0xFF) << 8);
+            int protoIdx = (item.id[0] & 0xFF) | ((item.id[1] & 0xFF) << 8);
             playerData.setInventoryIndex(slot, protoIdx);
-            updateIcon(slot, selected);
+            slotButtons[slot].setText(item.description);
+            String tooltip = item.getDetailString();
+            slotButtons[slot].setToolTipText(tooltip);
+            iconLabels[slot].setToolTipText(tooltip);
+            updateIcon(slot, item);
         }
     }
 
@@ -116,14 +134,7 @@ public class InventoryPanel extends JPanel {
     }
 
     public void reloadItems() {
-        updating = true;
-        try {
-            for (int i = 0; i < SLOT_COUNT; i++) {
-                slotCombos[i].setModel(buildComboModel());
-            }
-        } finally {
-            updating = false;
-        }
+        // No longer using combo models, but we need to refresh the current display
         refreshFromModel();
     }
 
@@ -132,28 +143,36 @@ public class InventoryPanel extends JPanel {
         try {
             if (playerData == null || !playerData.hasPlayerData()) {
                 for (int i = 0; i < SLOT_COUNT; i++) {
-                    slotCombos[i].setSelectedIndex(0);
-                    slotCombos[i].setEnabled(false);
+                    slotButtons[i].setText("(empty)");
+                    slotButtons[i].setEnabled(false);
                     iconLabels[i].setIcon(null);
                 }
                 return;
             }
             GlobalItem[] globalItems = saveFile.getGlobalItems();
             for (int i = 0; i < SLOT_COUNT; i++) {
-                slotCombos[i].setEnabled(true);
+                slotButtons[i].setEnabled(true);
                 int globalIdx = playerData.getInventoryIndex(i);
                 if (globalIdx > 0 && globalIdx < globalItems.length && !globalItems[globalIdx].isEmpty()) {
                     GlobalItem gi = globalItems[globalIdx];
                     Item match = findPrototype(gi);
                     if (match != null) {
-                        slotCombos[i].setSelectedItem(match);
+                        slotButtons[i].setText(match.description);
+                        String tooltip = match.getDetailString();
+                        slotButtons[i].setToolTipText(tooltip);
+                        iconLabels[i].setToolTipText(tooltip);
                         updateIcon(i, match);
                     } else {
-                        slotCombos[i].setSelectedIndex(0);
+                        String label = "Item #" + globalIdx;
+                        slotButtons[i].setText(label);
+                        slotButtons[i].setToolTipText(label);
+                        iconLabels[i].setToolTipText(label);
                         iconLabels[i].setIcon(null);
                     }
                 } else {
-                    slotCombos[i].setSelectedIndex(0);
+                    slotButtons[i].setText("(empty)");
+                    slotButtons[i].setToolTipText(null);
+                    iconLabels[i].setToolTipText(null);
                     iconLabels[i].setIcon(null);
                 }
             }
@@ -179,30 +198,5 @@ public class InventoryPanel extends JPanel {
             }
         }
         return null;
-    }
-
-    private class ItemListRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                                                      boolean isSelected, boolean cellHasFocus) {
-            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            if (value instanceof Item) {
-                Item item = (Item) value;
-                String label = (item.description != null && !item.description.isEmpty()) ? item.description : "Item " + item.getId();
-                setText(label);
-                if (item != EMPTY_ITEM) {
-                    BufferedImage img = imageProvider.getItem(item);
-                    if (img != null) {
-                        Image scaled = img.getScaledInstance(16, 16, Image.SCALE_SMOOTH);
-                        setIcon(new ImageIcon(scaled));
-                    } else {
-                        setIcon(null);
-                    }
-                } else {
-                    setIcon(null);
-                }
-            }
-            return this;
-        }
     }
 }
