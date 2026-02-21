@@ -9,19 +9,19 @@ import java.nio.charset.StandardCharsets;
 public class PakReader {
 
     public static byte[] extractFile(File pakFile, String targetName) throws IOException {
-        try (RandomAccessFile raf = new RandomAccessFile(pakFile, "r")) {
-            long filesize = raf.length();
-            long startOffset = readIntLE(raf) & 0xFFFFFFFFL;
+        try (var raf = new RandomAccessFile(pakFile, "r")) {
+            var filesize = raf.length();
+            var startOffset = readIntLE(raf) & 0xFFFFFFFFL;
             while (raf.getFilePointer() < startOffset) {
-                String fileName = readNullTerminatedString(raf);
+                var fileName = readNullTerminatedString(raf);
                 if (fileName.isEmpty()) break;
-                long nextEntryOffset = readIntLE(raf) & 0xFFFFFFFFL;
-                long endOffset = nextEntryOffset;
+                var nextEntryOffset = readIntLE(raf) & 0xFFFFFFFFL;
+                var endOffset = nextEntryOffset;
                 if (endOffset == 0 || endOffset > filesize || (endOffset < startOffset && endOffset != 0)) {
                     endOffset = filesize;
                 }
                 if (fileName.equalsIgnoreCase(targetName)) {
-                    byte[] data = new byte[(int) (endOffset - startOffset)];
+                    var data = new byte[(int) (endOffset - startOffset)];
                     raf.seek(startOffset);
                     raf.readFully(data);
                     return data;
@@ -34,10 +34,10 @@ public class PakReader {
     }
 
     public static byte[] findInDirectory(File gameDir, String targetName) throws IOException {
-        File[] pakFiles = gameDir.listFiles((d, name) -> name.toUpperCase().endsWith(".PAK"));
+        var pakFiles = gameDir.listFiles((d, name) -> name.toUpperCase().endsWith(".PAK"));
         if (pakFiles == null) return null;
-        for (File f : pakFiles) {
-            byte[] data = extractFile(f, targetName);
+        for (var f : pakFiles) {
+            var data = extractFile(f, targetName);
             if (data != null) return data;
         }
         return null;

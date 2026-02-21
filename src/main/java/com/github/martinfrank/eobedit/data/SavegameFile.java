@@ -11,7 +11,10 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class SavegameFile {
 
@@ -177,26 +180,21 @@ public class SavegameFile {
 
     /** Returns the set of global item indices currently referenced in any character's inventory. */
     public Set<Integer> getReferencedGlobalIndices() {
-        Set<Integer> refs = new HashSet<>();
-        for (int c = 0; c < AMOUNT_CHARACTERS; c++) {
-            if (playerData[c] == null) continue;
-            for (int s = 0; s < PlayerData.INVENTORY_SLOT_AMOUNT; s++) {
-                int idx = playerData[c].getInventoryIndex(s);
-                if (idx > 0) refs.add(idx);
-            }
-        }
-        return refs;
+        return Arrays.stream(playerData)
+                .filter(Objects::nonNull)
+                .flatMap(pd -> IntStream.range(0, PlayerData.INVENTORY_SLOT_AMOUNT)
+                        .mapToObj(pd::getInventoryIndex))
+                .filter(idx -> idx > 0)
+                .collect(Collectors.toSet());
     }
 
     /** Finds the first global slot index that is empty and not referenced. Index 0 is reserved (null item). */
     public int findFreeGlobalSlot() {
-        Set<Integer> refs = getReferencedGlobalIndices();
-        for (int i = 1; i < GLOBAL_ITEM_COUNT; i++) {
-            if (globalItems[i].isEmpty() && !refs.contains(i)) {
-                return i;
-            }
-        }
-        return -1;
+        var refs = getReferencedGlobalIndices();
+        return IntStream.range(1, GLOBAL_ITEM_COUNT)
+                .filter(i -> globalItems[i].isEmpty() && !refs.contains(i))
+                .findFirst()
+                .orElse(-1);
     }
 
     /**

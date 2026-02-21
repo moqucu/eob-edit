@@ -11,7 +11,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 public class InventoryPanel extends JPanel {
 
@@ -41,16 +41,16 @@ public class InventoryPanel extends JPanel {
     }
 
     private void buildUI() {
-        GridBagConstraints gbc = new GridBagConstraints();
+        var gbc = new GridBagConstraints();
         gbc.insets = new Insets(1, 4, 1, 4);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        for (int i = 0; i < SLOT_COUNT; i++) {
+        for (var i = 0; i < SLOT_COUNT; i++) {
             gbc.gridy = i;
 
             gbc.gridx = 0;
             gbc.weightx = 0;
-            JLabel slotLabel = new JLabel(PlayerData.getSlotName(i) + ":");
+            var slotLabel = new JLabel(PlayerData.getSlotName(i) + ":");
             add(slotLabel, gbc);
 
             gbc.gridx = 1;
@@ -61,7 +61,7 @@ public class InventoryPanel extends JPanel {
 
             gbc.gridx = 2;
             gbc.weightx = 1.0;
-            JButton button = new JButton("(empty)");
+            var button = new JButton("(empty)");
             button.setHorizontalAlignment(SwingConstants.LEFT);
             button.setBackground(UIManager.getColor("TextField.background"));
             button.setMargin(new Insets(2, 5, 2, 2));
@@ -83,9 +83,9 @@ public class InventoryPanel extends JPanel {
     private void openSearchPopup(int slot) {
         if (playerData == null) return;
         
-        Window ancestor = SwingUtilities.getWindowAncestor(this);
-        SearchableItemPopup popup = new SearchableItemPopup(ancestor, imageProvider);
-        Item selected = popup.showPopup(slotButtons[slot]);
+        var ancestor = SwingUtilities.getWindowAncestor(this);
+        var popup = new SearchableItemPopup(ancestor, imageProvider);
+        var selected = popup.showPopup(slotButtons[slot]);
         
         if (selected != null) {
             onItemChosen(slot, selected);
@@ -103,10 +103,10 @@ public class InventoryPanel extends JPanel {
             iconLabels[slot].setToolTipText(null);
             iconLabels[slot].setIcon(null);
         } else {
-            int protoIdx = (item.id[0] & 0xFF) | ((item.id[1] & 0xFF) << 8);
+            var protoIdx = (item.id[0] & 0xFF) | ((item.id[1] & 0xFF) << 8);
             playerData.setInventoryIndex(slot, protoIdx);
             slotButtons[slot].setText(item.description);
-            String tooltip = item.getDetailString();
+            var tooltip = item.getDetailString();
             slotButtons[slot].setToolTipText(tooltip);
             iconLabels[slot].setToolTipText(tooltip);
             updateIcon(slot, item);
@@ -115,9 +115,9 @@ public class InventoryPanel extends JPanel {
 
     private void updateIcon(int slot, Item item) {
         if (item != null && item != EMPTY_ITEM) {
-            BufferedImage img = imageProvider.getItem(item);
+            var img = imageProvider.getItem(item);
             if (img != null) {
-                Image scaled = img.getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+                var scaled = img.getScaledInstance(24, 24, Image.SCALE_SMOOTH);
                 iconLabels[slot].setIcon(new ImageIcon(scaled));
             } else {
                 iconLabels[slot].setIcon(null);
@@ -142,28 +142,28 @@ public class InventoryPanel extends JPanel {
         updating = true;
         try {
             if (playerData == null || !playerData.hasPlayerData()) {
-                for (int i = 0; i < SLOT_COUNT; i++) {
+                for (var i = 0; i < SLOT_COUNT; i++) {
                     slotButtons[i].setText("(empty)");
                     slotButtons[i].setEnabled(false);
                     iconLabels[i].setIcon(null);
                 }
                 return;
             }
-            GlobalItem[] globalItems = saveFile.getGlobalItems();
-            for (int i = 0; i < SLOT_COUNT; i++) {
+            var globalItems = saveFile.getGlobalItems();
+            for (var i = 0; i < SLOT_COUNT; i++) {
                 slotButtons[i].setEnabled(true);
-                int globalIdx = playerData.getInventoryIndex(i);
+                var globalIdx = playerData.getInventoryIndex(i);
                 if (globalIdx > 0 && globalIdx < globalItems.length && !globalItems[globalIdx].isEmpty()) {
-                    GlobalItem gi = globalItems[globalIdx];
-                    Item match = findPrototype(gi);
+                    var gi = globalItems[globalIdx];
+                    var match = findPrototype(gi);
                     if (match != null) {
                         slotButtons[i].setText(match.description);
-                        String tooltip = match.getDetailString();
+                        var tooltip = match.getDetailString();
                         slotButtons[i].setToolTipText(tooltip);
                         iconLabels[i].setToolTipText(tooltip);
                         updateIcon(i, match);
                     } else {
-                        String label = "Item #" + globalIdx;
+                        var label = "Item #" + globalIdx;
                         slotButtons[i].setText(label);
                         slotButtons[i].setToolTipText(label);
                         iconLabels[i].setToolTipText(label);
@@ -183,20 +183,24 @@ public class InventoryPanel extends JPanel {
 
     /** Finds the best prototype item whose properties match the given global item. */
     private Item findPrototype(GlobalItem gi) {
-        for (Item item : Items.getAllItems()) {
-            if (item.nameId == gi.nameId &&
-                    item.nameUnid == gi.nameUnid &&
-                    item.rawType == gi.type &&
-                    item.iconIndex == gi.icon) {
-                return item;
-            }
+        var allItems = Items.getAllItems();
+        
+        // Perfect match
+        var perfectMatch = Arrays.stream(allItems)
+                .filter(item -> item.nameId == gi.nameId &&
+                        item.nameUnid == gi.nameUnid &&
+                        item.rawType == gi.type &&
+                        item.iconIndex == gi.icon)
+                .findFirst();
+        
+        if (perfectMatch.isPresent()) {
+            return perfectMatch.get();
         }
+
         // Fallback: match only nameId and nameUnid if perfect match failed
-        for (Item item : Items.getAllItems()) {
-            if (item.nameId == gi.nameId && item.nameUnid == gi.nameUnid) {
-                return item;
-            }
-        }
-        return null;
+        return Arrays.stream(allItems)
+                .filter(item -> item.nameId == gi.nameId && item.nameUnid == gi.nameUnid)
+                .findFirst()
+                .orElse(null);
     }
 }

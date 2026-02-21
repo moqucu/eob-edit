@@ -105,14 +105,14 @@ public class EditorFrame extends JFrame implements PlayerDataChangeEventListener
 
     private void onOpen() {
         if (savegameFile.hasUnsavedChanges()) {
-            int result = JOptionPane.showConfirmDialog(this,
+            var result = JOptionPane.showConfirmDialog(this,
                     "You have unsaved changes. Discard them?",
                     "Unsaved Changes", JOptionPane.YES_NO_CANCEL_OPTION);
             if (result != JOptionPane.YES_OPTION) {
                 return;
             }
         }
-        JFileChooser chooser = new JFileChooser();
+        var chooser = new JFileChooser();
         chooser.setDialogTitle("Open Savegame File");
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             loadFile(chooser.getSelectedFile());
@@ -198,15 +198,15 @@ public class EditorFrame extends JFrame implements PlayerDataChangeEventListener
     }
 
     private void onSetGameDataPath() {
-        JFileChooser chooser = new JFileChooser();
+        var chooser = new JFileChooser();
         chooser.setDialogTitle("Select Game Data Directory");
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        String storedPath = prefs.get(PREF_GAME_DATA_PATH, null);
+        var storedPath = prefs.get(PREF_GAME_DATA_PATH, null);
         if (storedPath != null) {
             chooser.setCurrentDirectory(new File(storedPath));
         }
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File dir = chooser.getSelectedFile();
+            var dir = chooser.getSelectedFile();
             loadGameData(dir);
             prefs.put(PREF_GAME_DATA_PATH, dir.getAbsolutePath());
         }

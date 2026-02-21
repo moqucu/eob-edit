@@ -43,17 +43,7 @@ public class EobItemLoader {
             Items.ItemType.WAND        // 17
     };
 
-    public static class LoadResult {
-        public final Item[] items;
-        public final BufferedImage[] icons;
-        public final String[] nameTable;
-
-        public LoadResult(Item[] items, BufferedImage[] icons, String[] nameTable) {
-            this.items = items;
-            this.icons = icons;
-            this.nameTable = nameTable;
-        }
-    }
+    public record LoadResult(Item[] items, BufferedImage[] icons, String[] nameTable) {}
 
     private static class ItemTypeRecord {
         int armorClass;
@@ -62,12 +52,12 @@ public class EobItemLoader {
     }
 
     public static LoadResult loadItems(File gameDir) throws IOException {
-        byte[] itemDat = PakReader.findInDirectory(gameDir, "ITEM.DAT");
+        var itemDat = PakReader.findInDirectory(gameDir, "ITEM.DAT");
         if (itemDat == null) {
             throw new IOException("ITEM.DAT not found in game directory: " + gameDir);
         }
 
-        ByteBuffer bb = ByteBuffer.wrap(itemDat).order(ByteOrder.LITTLE_ENDIAN);
+        var bb = ByteBuffer.wrap(itemDat).order(ByteOrder.LITTLE_ENDIAN);
         int numItems = bb.getShort() & 0xFFFF;
 
         int[] nameUnid = new int[numItems];
@@ -94,20 +84,20 @@ public class EobItemLoader {
         int numNames = bb.getShort() & 0xFFFF;
         String[] names = new String[numNames];
         for (int i = 0; i < numNames; i++) {
-            byte[] nameBytes = new byte[35];
+            var nameBytes = new byte[35];
             bb.get(nameBytes);
             names[i] = new String(nameBytes, StandardCharsets.US_ASCII).trim();
         }
 
-        ItemTypeRecord[] typeTable = loadItemTypes(gameDir);
+        var typeTable = loadItemTypes(gameDir);
 
-        Item[] items = new Item[numItems];
+        var items = new Item[numItems];
         for (int i = 0; i < numItems; i++) {
-            String nameIdentified = (nameId[i] > 0 && nameId[i] < numNames) ? names[nameId[i]] : null;
-            String nameGeneric = (nameUnid[i] < numNames) ? names[nameUnid[i]] : "Unknown";
-            String description = (nameIdentified != null && !nameIdentified.isEmpty()) ? nameIdentified : nameGeneric;
+            var nameIdentified = (nameId[i] > 0 && nameId[i] < numNames) ? names[nameId[i]] : null;
+            var nameGeneric = (nameUnid[i] < numNames) ? names[nameUnid[i]] : "Unknown";
+            var description = (nameIdentified != null && !nameIdentified.isEmpty()) ? nameIdentified : nameGeneric;
             
-            Items.ItemType type = (types[i] < TYPE_MAP.length) ? TYPE_MAP[types[i]] : Items.ItemType.ITEM;
+            var type = (types[i] < TYPE_MAP.length) ? TYPE_MAP[types[i]] : Items.ItemType.ITEM;
             items[i] = new Item(i, description, type, icons[i]);
             items[i].nameId = nameId[i];
             items[i].nameUnid = nameUnid[i];
@@ -116,7 +106,7 @@ public class EobItemLoader {
             items[i].value = values[i];
 
             if (typeTable != null && types[i] >= 0 && types[i] < typeTable.length) {
-                ItemTypeRecord tr = typeTable[types[i]];
+                var tr = typeTable[types[i]];
                 items[i].armorClass = tr.armorClass;
                 items[i].dmgNumDiceS = tr.dmgNumDiceS;
                 items[i].dmgNumPipsS = tr.dmgNumPipsS;
@@ -129,24 +119,24 @@ public class EobItemLoader {
 
         LOGGER.info("Loaded {} items from ITEM.DAT", numItems);
 
-        BufferedImage[] iconImages = loadIcons(gameDir);
+        var iconImages = loadIcons(gameDir);
 
         return new LoadResult(items, iconImages, names);
     }
 
     private static ItemTypeRecord[] loadItemTypes(File gameDir) throws IOException {
-        byte[] typeDat = PakReader.findInDirectory(gameDir, "ITEMTYPE.DAT");
+        var typeDat = PakReader.findInDirectory(gameDir, "ITEMTYPE.DAT");
         if (typeDat == null) {
             LOGGER.warn("ITEMTYPE.DAT not found, detailed item properties will be missing");
             return null;
         }
 
-        ByteBuffer bb = ByteBuffer.wrap(typeDat).order(ByteOrder.LITTLE_ENDIAN);
+        var bb = ByteBuffer.wrap(typeDat).order(ByteOrder.LITTLE_ENDIAN);
         int numTypes = bb.getShort() & 0xFFFF;
-        ItemTypeRecord[] records = new ItemTypeRecord[numTypes];
+        var records = new ItemTypeRecord[numTypes];
 
         for (int i = 0; i < numTypes; i++) {
-            ItemTypeRecord r = new ItemTypeRecord();
+            var r = new ItemTypeRecord();
             bb.getShort(); // invFlags
             bb.getShort(); // handFlags
             r.armorClass = bb.get();
@@ -166,13 +156,13 @@ public class EobItemLoader {
     }
 
     private static BufferedImage[] loadIcons(File gameDir) throws IOException {
-        byte[] palData = PakReader.findInDirectory(gameDir, "EOBPAL.COL");
+        var palData = PakReader.findInDirectory(gameDir, "EOBPAL.COL");
         if (palData == null) {
             LOGGER.warn("EOBPAL.COL not found, icons will not be available");
             return null;
         }
 
-        int[] palette = new int[256];
+        var palette = new int[256];
         for (int i = 0; i < 256; i++) {
             int r = (palData[i * 3] & 0xFF) << 2;
             int g = (palData[i * 3 + 1] & 0xFF) << 2;
@@ -180,16 +170,16 @@ public class EobItemLoader {
             palette[i] = (0xFF << 24) | (r << 16) | (g << 8) | b;
         }
 
-        byte[] cpsData = PakReader.findInDirectory(gameDir, "ITEMICN.CPS");
+        var cpsData = PakReader.findInDirectory(gameDir, "ITEMICN.CPS");
         if (cpsData == null) {
             LOGGER.warn("ITEMICN.CPS not found, icons will not be available");
             return null;
         }
 
-        byte[] decoded = CpsDecoder.decodeCPS(cpsData);
+        var decoded = CpsDecoder.decodeCPS(cpsData);
 
         int maxIcons = (SHEET_WIDTH / ICON_SIZE) * (SHEET_HEIGHT / ICON_SIZE);
-        BufferedImage[] iconImages = new BufferedImage[maxIcons];
+        var iconImages = new BufferedImage[maxIcons];
 
         for (int idx = 0; idx < maxIcons; idx++) {
             int x = (idx % ICONS_PER_ROW) * ICON_SIZE;
@@ -197,7 +187,7 @@ public class EobItemLoader {
 
             if (x + ICON_SIZE > SHEET_WIDTH || y + ICON_SIZE > SHEET_HEIGHT) continue;
 
-            BufferedImage img = new BufferedImage(ICON_SIZE * SCALE, ICON_SIZE * SCALE, BufferedImage.TYPE_INT_ARGB);
+            var img = new BufferedImage(ICON_SIZE * SCALE, ICON_SIZE * SCALE, BufferedImage.TYPE_INT_ARGB);
             for (int iy = 0; iy < ICON_SIZE; iy++) {
                 for (int ix = 0; ix < ICON_SIZE; ix++) {
                     int pixel = decoded[(y + iy) * SHEET_WIDTH + (x + ix)] & 0xFF;

@@ -65,12 +65,12 @@ public class PlayerData {
     }
 
     public String getName() {
-        byte[] name = ByteArrayTool.copy(content, CHARACTER_NAME_OFFSET, CHARACTER_NAME_LENGTH);
+        var name = ByteArrayTool.copy(content, CHARACTER_NAME_OFFSET, CHARACTER_NAME_LENGTH);
         return ByteArrayTool.asString(name);
     }
 
     public void setName(String name) {
-        byte[] nameByte = name.getBytes();
+        var nameByte = name.getBytes();
         ByteArrayTool.set(content, nameByte, CHARACTER_NAME_OFFSET, CHARACTER_NAME_LENGTH);
         updateChanges(ChangeEventType.NAME);
     }
@@ -87,8 +87,8 @@ public class PlayerData {
         if (index < 0 || index >= INVENTORY_SLOT_AMOUNT) {
             throw new IllegalArgumentException("invalid inventory index (allowed is 0.." + (INVENTORY_SLOT_AMOUNT - 1) + ")");
         }
-        int offset = INVENTORY_OFFSET + index * INVENTORY_LENGTH;
-        byte[] data = ByteArrayTool.copy(content, offset, INVENTORY_LENGTH);
+        var offset = INVENTORY_OFFSET + index * INVENTORY_LENGTH;
+        var data = ByteArrayTool.copy(content, offset, INVENTORY_LENGTH);
         return (data[0] & 0xFF) | ((data[1] & 0xFF) << 8);
     }
 
@@ -97,8 +97,8 @@ public class PlayerData {
         if (index < 0 || index >= INVENTORY_SLOT_AMOUNT) {
             throw new IllegalArgumentException("invalid inventory index (allowed is 0.." + (INVENTORY_SLOT_AMOUNT - 1) + ")");
         }
-        int offset = INVENTORY_OFFSET + index * INVENTORY_LENGTH;
-        byte[] data = new byte[]{(byte)(globalIndex & 0xFF), (byte)((globalIndex >> 8) & 0xFF)};
+        var offset = INVENTORY_OFFSET + index * INVENTORY_LENGTH;
+        var data = new byte[]{(byte)(globalIndex & 0xFF), (byte)((globalIndex >> 8) & 0xFF)};
         ByteArrayTool.set(content, data, offset, INVENTORY_LENGTH);
         updateChanges(ChangeEventType.INVENTORY);
     }
