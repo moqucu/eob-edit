@@ -12,7 +12,9 @@ import javafx.scene.layout.Priority;
 
 public class FXStatsPanel extends GridPane {
 
+    @SuppressWarnings("unchecked")
     private final Spinner<Integer>[] currentSpinners = new Spinner[Stat.Stats.values().length];
+    @SuppressWarnings("unchecked")
     private final Spinner<Integer>[] maxSpinners = new Spinner[Stat.Stats.values().length];
     private PlayerData playerData;
     private boolean updating = false;

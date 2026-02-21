@@ -19,27 +19,34 @@ A Java savegame editor for **Eye of the Beholder** (DOS, 1991) by Westwood/TSR. 
 
 ## Build
 
+### Build standard JAR
 ```bash
 mvn clean package
 ```
+This produces a runnable fat JAR at `target/eob-edit-0.1.0-fat.jar`.
 
-This produces a runnable fat JAR at `target/eob-edit-0.1.0.jar`.
+### Build native macOS App
+```bash
+mvn clean package -Pbundle-macos
+```
+This produces a standalone `EOBEdit.app` in `target/dist/` with its own Java runtime and an authentic Beholder icon.
 
 ## Run
 
-You can run the application using Maven:
-
+### Via Maven
 ```bash
 mvn javafx:run
 ```
 
-Or run the produced JAR:
-
+### Via JAR
 ```bash
-java -jar target/eob-edit-0.1.0.jar
+java -jar target/eob-edit-0.1.0-fat.jar
 ```
 
-You can also set the game data path at runtime via **Settings > Set Game Data Path...**. The path is persisted automatically for future sessions.
+### Via macOS App
+Double-click `target/dist/EOBEdit.app`.
+
+---
 
 An example savegame is included at `src/main/resources/EOBDATA.SAV` for testing.
 
@@ -53,19 +60,12 @@ mvn test
 
 ```
 src/main/java/com/github/martinfrank/eobedit/
-  App.java              — Entry point, launches Swing GUI
+  App.java              — Entry point, launches JavaFX UI
   data/                 — SavegameFile, PlayerData, GlobalItem, Items, Stat, enums
   event/                — Observer pattern for change tracking
-  gui/                  — EditorFrame, StatsPanel, InventoryPanel
-  image/                — ImageProvider (item/portrait PNGs)
+  gui/fx/               — Modern JavaFX UI components
+  image/                — ImageProvider (item/portrait/icon handling)
   pak/                  — PakReader, CpsDecoder, EobItemLoader (game file parsing)
-  tools/                — ScreenShotSnipper (extracts item images from screenshots)
-
-src/main/resources/
-  item/                 — Fallback item icon PNGs
-  portrait/             — Fallback portrait PNGs
-  hex-editing-guide.txt — Reference: EoB1 hex codes (GameFAQs)
-  EOBDATA.SAV           — Example savegame for testing
 ```
 
 ## License
