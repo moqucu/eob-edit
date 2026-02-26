@@ -26,6 +26,7 @@ public class FXInventoryPanel extends GridPane {
     private final ImageProvider imageProvider;
     private final SavegameFile saveFile;
     private PlayerData playerData;
+    private int charIndex = -1;
     private boolean updating = false;
 
     public FXInventoryPanel(ImageProvider imageProvider, SavegameFile saveFile) {
@@ -72,18 +73,18 @@ public class FXInventoryPanel extends GridPane {
 
     private void onItemChosen(int slot, Item item) {
         if (updating || playerData == null) return;
-        
+
         if (item == null || item == EMPTY_ITEM) {
-            playerData.setInventoryIndex(slot, 0);
+            saveFile.clearInventorySlot(charIndex, slot);
         } else {
-            var protoIdx = (item.id[0] & 0xFF) | ((item.id[1] & 0xFF) << 8);
-            playerData.setInventoryIndex(slot, protoIdx);
+            saveFile.assignItem(charIndex, slot, item);
         }
         refreshFromModel();
     }
 
     public void setPlayerData(PlayerData playerData, int charIndex) {
         this.playerData = playerData;
+        this.charIndex = charIndex;
         refreshFromModel();
     }
 

@@ -97,14 +97,13 @@ public class InventoryPanel extends JPanel {
             return;
         }
         if (item == null || item == EMPTY_ITEM) {
-            playerData.setInventoryIndex(slot, 0);
+            saveFile.clearInventorySlot(charIndex, slot);
             slotButtons[slot].setText("(empty)");
             slotButtons[slot].setToolTipText(null);
             iconLabels[slot].setToolTipText(null);
             iconLabels[slot].setIcon(null);
         } else {
-            var protoIdx = (item.id[0] & 0xFF) | ((item.id[1] & 0xFF) << 8);
-            playerData.setInventoryIndex(slot, protoIdx);
+            saveFile.assignItem(charIndex, slot, item);
             slotButtons[slot].setText(item.description);
             var tooltip = item.getDetailString();
             slotButtons[slot].setToolTipText(tooltip);
