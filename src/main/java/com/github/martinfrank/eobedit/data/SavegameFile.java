@@ -214,7 +214,7 @@ public class SavegameFile {
             }
         }
         GlobalItem gi = globalItems[targetIdx];
-        gi.nameUnid = proto.nameId >= 0 ? proto.nameId : 0;
+        gi.nameUnid = proto.nameUnid >= 0 ? proto.nameUnid : 0;
         gi.nameId   = proto.nameId >= 0 ? proto.nameId : 0;
         gi.type     = proto.rawType >= 0 ? proto.rawType : 0;
         gi.icon     = proto.iconIndex >= 0 ? proto.iconIndex : 0;
