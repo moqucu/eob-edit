@@ -6,7 +6,7 @@
 
     <groupId>com.github.martinfrank</groupId>
     <artifactId>eob-edit</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <name>eob-edit</name>
     <description>editor for eob save gamese</description>

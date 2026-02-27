@@ -24,7 +24,7 @@ A Java savegame editor for **Eye of the Beholder** (DOS, 1991) by Westwood/TSR. 
 ```bash
 mvn clean package
 ```
-This produces a runnable fat JAR at `target/eob-edit-1.0.0-fat.jar`.
+This produces a runnable fat JAR at `target/eob-edit-1.0.1-fat.jar`.
 
 ### Build native macOS App
 ```bash
@@ -41,7 +41,7 @@ mvn javafx:run
 
 ### Via JAR
 ```bash
-java -jar target/eob-edit-1.0.0-fat.jar
+java -jar target/eob-edit-1.0.1-fat.jar
 ```
 
 ### Via macOS App
