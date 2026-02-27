@@ -13,6 +13,8 @@ A Java savegame editor for **Eye of the Beholder** (DOS, 1991) by Westwood/TSR. 
 - **Game data loading** — Load items directly from the game's PAK files (ITEM.DAT, EOBPAL.COL, ITEMICN.CPS) for authoritative item names, types, and icons
 - **Persistent settings** — Game data path is remembered across sessions
 
+> **Note**: This repository does not contain original game assets (images or text). To see item icons and portraits, you must use the **Set Game Data Path...** menu item to point the editor to your copy of the original *Eye of the Beholder* game files.
+
 ## Prerequisites
 
 - Java 25 or later
@@ -24,7 +26,7 @@ A Java savegame editor for **Eye of the Beholder** (DOS, 1991) by Westwood/TSR. 
 ```bash
 mvn clean package
 ```
-This produces a runnable fat JAR at `target/eob-edit-1.0.1-fat.jar`.
+This produces a runnable fat JAR at `target/eob-edit-1.0.2-fat.jar`.
 
 ### Build native macOS App
 ```bash
@@ -41,7 +43,7 @@ mvn javafx:run
 
 ### Via JAR
 ```bash
-java -jar target/eob-edit-1.0.1-fat.jar
+java -jar target/eob-edit-1.0.2-fat.jar
 ```
 
 ### Via macOS App
