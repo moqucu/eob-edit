@@ -10,6 +10,7 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -59,10 +60,13 @@ public class FXEditorController implements PlayerDataChangeEventListener {
         var menuBar = new MenuBar();
         var fileMenu = new Menu("File");
         var openItem = new MenuItem("Open...");
+        openItem.setAccelerator(KeyCombination.valueOf("Shortcut+L"));
         openItem.setOnAction(e -> onOpen());
         var saveItem = new MenuItem("Save");
+        saveItem.setAccelerator(KeyCombination.valueOf("Shortcut+S"));
         saveItem.setOnAction(e -> onSave());
         var quitItem = new MenuItem("Quit");
+        quitItem.setAccelerator(KeyCombination.valueOf("Shortcut+Q"));
         quitItem.setOnAction(e -> onClose());
         fileMenu.getItems().addAll(openItem, saveItem, new SeparatorMenuItem(), quitItem);
 

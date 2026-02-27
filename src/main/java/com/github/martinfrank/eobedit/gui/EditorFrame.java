@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -78,17 +79,22 @@ public class EditorFrame extends JFrame implements PlayerDataChangeEventListener
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
 
+        int menuShortcutMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+
         JMenuItem openItem = new JMenuItem("Open...");
+        openItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, menuShortcutMask));
         openItem.addActionListener(e -> onOpen());
         fileMenu.add(openItem);
 
         JMenuItem saveItem = new JMenuItem("Save");
+        saveItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, menuShortcutMask));
         saveItem.addActionListener(e -> onSave());
         fileMenu.add(saveItem);
 
         fileMenu.addSeparator();
 
         JMenuItem quitItem = new JMenuItem("Quit");
+        quitItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, menuShortcutMask));
         quitItem.addActionListener(e -> onClose());
         fileMenu.add(quitItem);
 
