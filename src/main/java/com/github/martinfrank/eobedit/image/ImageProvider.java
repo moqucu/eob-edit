@@ -57,12 +57,12 @@ public class ImageProvider {
             String resourceName = dir+filename;
             InputStream is = getClass().getClassLoader().getResourceAsStream(resourceName);
             if(is == null){
-                LOGGER.error("cannot create input stream for image file {}{}, returned image=null!",dir,filename);
+                LOGGER.debug("cannot create input stream for image file {}{}, returned image=null!",dir,filename);
                 return null;
             }
             return ImageIO.read(is);
         } catch (IOException e) {
-            LOGGER.error("cannot read image file {}{}, returned image=null!",dir,filename);
+            LOGGER.debug("cannot read image file {}{}, returned image=null!",dir,filename);
             return null;
         }
     }
