@@ -7,6 +7,7 @@ A Java savegame editor for **Eye of the Beholder** (DOS, 1991) by Westwood/TSR. 
 - **Stats editing** — Modify STR, INT, WIS, DEX, CON, CHA, HP (current/max), and AC for each character
 - **Inventory management** — View and swap items across 27 inventory slots (including equipment and pack) with item images and searchable dropdowns
 - **Searchable selection** — Click on any item icon or use the "..." button to open a searchable dialog, making it easy to find specific items among the 400+ available prototypes
+- **Keyboard shortcuts** — Standard macOS shortcuts (CMD+L to load, CMD+S to save, CMD+Q to quit) for faster workflow
 - **6-character support** — Switch between all six party slots via a player selector
 - **Unsaved changes tracking** — Title bar indicator and confirmation dialogs prevent accidental data loss
 - **Game data loading** — Load items directly from the game's PAK files (ITEM.DAT, EOBPAL.COL, ITEMICN.CPS) for authoritative item names, types, and icons
@@ -23,7 +24,7 @@ A Java savegame editor for **Eye of the Beholder** (DOS, 1991) by Westwood/TSR. 
 ```bash
 mvn clean package
 ```
-This produces a runnable fat JAR at `target/eob-edit-0.1.0-fat.jar`.
+This produces a runnable fat JAR at `target/eob-edit-1.0.0-fat.jar`.
 
 ### Build native macOS App
 ```bash
@@ -40,7 +41,7 @@ mvn javafx:run
 
 ### Via JAR
 ```bash
-java -jar target/eob-edit-0.1.0-fat.jar
+java -jar target/eob-edit-1.0.0-fat.jar
 ```
 
 ### Via macOS App
