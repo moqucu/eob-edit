@@ -49,8 +49,6 @@ Double-click `target/dist/EOBEdit.app`.
 
 ---
 
-An example savegame is included at `src/main/resources/EOBDATA.SAV` for testing.
-
 ## Tests
 
 ```bash

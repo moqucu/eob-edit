@@ -1,6 +1,0 @@
-FIGHTER,F,Fighter
-RANGER,R,Ranger
-PALADIN,P,Paladin
-MAGE,M,Mage
-CLERIC,C,Cleric
-THIEF,T,Thief
